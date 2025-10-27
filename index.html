@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NRF Math Review</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg, #74ebd5, #acb6e5);
+    color: #333;
+    padding: 30px;
+    margin: 0;
+  }
+
+  h1 {
+    text-align: center;
+    color: #fff;
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+  }
+
+  #scoreDisplay {
+    text-align: center;
+    font-size: 1.3em;
+    color: #fff;
+    background: rgba(0,0,0,0.3);
+    padding: 10px 0;
+    margin: 20px auto;
+    border-radius: 10px;
+    width: 220px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  }
+
+  .topic {
+    background: #fff;
+    padding: 20px;
+    margin: 25px auto;
+    border-radius: 12px;
+    max-width: 750px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+
+  h2 {
+    text-align: center;
+    color: #2c3e50;
+  }
+
+  .question {
+    margin: 10px 0;
+    padding: 10px;
+    border-left: 4px solid #74b9ff;
+    background-color: #f8faff;
+    border-radius: 6px;
+  }
+
+  input[type="text"] {
+    padding: 6px 8px;
+    width: 120px;
+    border: 2px solid #74b9ff;
+    border-radius: 6px;
+    outline: none;
+  }
+
+  input[type="text"]:focus {
+    border-color: #0984e3;
+    box-shadow: 0 0 5px rgba(9,132,227,0.5);
+  }
+
+  button {
+    background: #0984e3;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background: #74b9ff;
+    color: #333;
+  }
+
+  .feedback {
+    margin-top: 5px;
+    font-weight: bold;
+  }
+
+  #resultsScreen {
+    display: none;
+    text-align: center;
+    background: rgba(255,255,255,0.95);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    max-width: 500px;
+    margin: 100px auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>NRF Math Midterm Review</h1>
+<div id="scoreDisplay">Score: 0%</div>
+<div id="quizContainer"></div>
+
+<div id="resultsScreen">
+  <h2>Your Results</h2>
+  <p id="finalScore"></p>
+  <button onclick="restartQuiz()">Try Again 🔁</button>
+</div>
+
+<script>
+const allCategories = {
+  "Factors & Multiples": [
+    {q:"List all factors of 36", a:"1,2,3,4,6,9,12,18,36"},
+    {q:"LCM of 12 and 18", a:"36"},
+    {q:"GCF of 36 and 60", a:"12"},
+    {q:"LCM of 15 and 20", a:"60"},
+    {q:"LCM of 8 and 12", a:"24"},
+    {q:"GCF of 42 and 56", a:"14"},
+    {q:"LCM of 9 and 12", a:"36"},
+    {q:"GCF of 18 and 24", a:"6"},
+    {q:"LCM of 10 and 15", a:"30"},
+    {q:"GCF of 40 and 100", a:"20"}
+  ],
+  "Radicals": [
+    {q:"Simplify √50", a:"5√2"},
+    {q:"Simplify √72", a:"6√2"},
+    {q:"Simplify √18", a:"3√2"},
+    {q:"Simplify √32", a:"4√2"},
+    {q:"Simplify √8", a:"2√2"},
+    {q:"Simplify √200", a:"10√2"},
+    {q:"Simplify √12", a:"2√3"},
+    {q:"Simplify √45", a:"3√5"},
+    {q:"Simplify √27", a:"3√3"},
+    {q:"Simplify √75", a:"5√3"}
+  ],
+  "Exponents": [
+    {q:"Simplify (2^3)(2^4)", a:"128"},
+    {q:"Simplify (3^2)^3", a:"729"},
+    {q:"Simplify 2^5 ÷ 2^2", a:"8"},
+    {q:"Simplify (4^2)(4^3)", a:"1024"},
+    {q:"Simplify (2^4)^2", a:"256"},
+    {q:"Simplify 7^1", a:"7"},
+    {q:"Simplify 5^3 ÷ 5", a:"25"},
+    {q:"Simplify (3^3)(3^2)", a:"243"},
+    {q:"Simplify (6^2)^2", a:"1296"},
+    {q:"Simplify (5^2)(5^3)", a:"3125"}
+  ],
+  "Expanding Polynomials": [
+    {q:"Expand (x+3)(x+5)", a:"x^2+8x+15"},
+    {q:"Expand (x+2)(x+7)", a:"x^2+9x+14"},
+    {q:"Expand (x-4)(x+6)", a:"x^2+2x-24"},
+    {q:"Expand (x+1)(x+9)", a:"x^2+10x+9"},
+    {q:"Expand (x-2)(x-3)", a:"x^2-5x+6"},
+    {q:"Expand (2x+3)(x+4)", a:"2x^2+11x+12"},
+    {q:"Expand (x+5)^2", a:"x^2+10x+25"},
+    {q:"Expand (x-6)^2", a:"x^2-12x+36"},
+    {q:"Expand (x+3)(2x+5)", a:"2x^2+11x+15"},
+    {q:"Expand (x-1)(x-7)", a:"x^2-8x+7"}
+  ],
+  "Factoring Polynomials": [
+    {q:"Factor x^2+7x+10", a:"(x+2)(x+5)"},
+    {q:"Factor x^2+9x+14", a:"(x+2)(x+7)"},
+    {q:"Factor x^2+2x-24", a:"(x-4)(x+6)"},
+    {q:"Factor x^2-5x+6", a:"(x-2)(x-3)"},
+    {q:"Factor 2x^2+11x+12", a:"(2x+3)(x+4)"},
+    {q:"Factor 3x^2+13x-10", a:"(3x-2)(x+5)"},
+    {q:"Factor x^2+8x+16", a:"(x+4)(x+4)"},
+    {q:"Factor x^2-12x+36", a:"(x-6)(x-6)"},
+    {q:"Factor x^2+5x-24", a:"(x-3)(x+8)"},
+    {q:"Factor x^2-7x+10", a:"(x-5)(x-2)"}
+  ]
+};
+
+let currentSet = {};
+let correctAnswers = 0;
+let totalQuestions = 0;
+
+function randomSubset(arr, size) {
+  let shuffled = arr.slice().sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, size);
+}
+
+function createQuiz() {
+  document.getElementById('resultsScreen').style.display = 'none';
+  const container = document.getElementById('quizContainer');
+  container.innerHTML = '';
+  correctAnswers = 0;
+  totalQuestions = 0;
+  document.getElementById('scoreDisplay').textContent = `Score: 0%`;
+
+  for (let category in allCategories) {
+    const topicDiv = document.createElement('div');
+    topicDiv.className = 'topic';
+    const title = document.createElement('h2');
+    title.textContent = category;
+    topicDiv.appendChild(title);
+
+    const questions = randomSubset(allCategories[category], 5);
+    currentSet[category] = questions;
+
+    questions.forEach((item, index) => {
+      totalQuestions++;
+      const qDiv = document.createElement('div');
+      qDiv.className = 'question';
+      qDiv.innerHTML = `
+        ${index+1}. ${item.q}
+        <input type="text" id="${category.replace(/\s/g,'')}_q${index}">
+        <button onclick="checkAnswer('${category}',${index})">Check</button>
+        <div class="feedback" id="${category.replace(/\s/g,'')}_feedback${index}"></div>`;
+      topicDiv.appendChild(qDiv);
+    });
+    container.appendChild(topicDiv);
+  }
+}
+
+function checkAnswer(category, index) {
+  const inputId = `${category.replace(/\s/g,'')}_q${index}`;
+  const feedbackId = `${category.replace(/\s/g,'')}_feedback${index}`;
+  const answer = document.getElementById(inputId).value.replace(/\s/g,'');
+  const correct = currentSet[category][index].a.replace(/\s/g,'');
+  const feedback = document.getElementById(feedbackId);
+
+  if (!feedback.classList.contains('answered')) {
+    if (answer === correct) {
+      correctAnswers++;
+      feedback.textContent = "✅ Correct!";
+      feedback.style.color = "green";
+    } else {
+      feedback.textContent = "❌ Try again. Correct: " + currentSet[category][index].a;
+      feedback.style.color = "red";
+    }
+    feedback.classList.add('answered');
+  }
+
+  updateScore();
+
+  if (document.querySelectorAll('.feedback.answered').length === totalQuestions) {
+    setTimeout(showResults, 500);
+  }
+}
+
+function updateScore() {
+  const percent = Math.round((correctAnswers / totalQuestions) * 100);
+  document.getElementById('scoreDisplay').textContent = `Score: ${percent}%`;
+}
+
+function showResults() {
+  document.getElementById('quizContainer').innerHTML = '';
+  document.getElementById('resultsScreen').style.display = 'block';
+  const percent = Math.round((correctAnswers / totalQuestions) * 100);
+  document.getElementById('finalScore').textContent = `You got ${percent}% correct!`;
+}
+
+function restartQuiz() {
+  createQuiz();
+}
+
+createQuiz();
+</script>
+
+</body>
+</html>
